@@ -113,11 +113,9 @@ By passing `423` as argument, the program spawns a shell with `level1` privilege
 ## Files in this repository
 
 ```
-level0/
+level1/
 ├── flag.txt
-├── decompiled_level0.c
 ├── walkthrough.md
-└── Ressources/
-    └── ghidra_level0.png
+└──decompiled_level0/
+   └── main.c
 ```
-
