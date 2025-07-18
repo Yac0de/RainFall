@@ -1,8 +1,8 @@
-# Level00 - ASM Analysis (GDB only)
+# Level0 - ASM Analysis (GDB only)
 
 ## Introduction
 
-This file complements the main README.md by providing a low-level analysis of the level00 binary using GDB only, without relying on Ghidra.
+This file complements the main walkthrough.md by providing a low-level analysis of the level0 binary using GDB only, without relying on Ghidra.
 
 We examine how the binary processes its input, makes security checks, and executes a shell. This analysis is useful for understanding how privilege escalation is implemented and under what conditions it is triggered.
 
