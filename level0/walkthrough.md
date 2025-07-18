@@ -112,10 +112,7 @@ By passing `423` as argument, the program spawns a shell with `level1` privilege
 
 ## Files in this repository
 
-```
-level1/
-├── flag.txt
-├── walkthrough.md
-└──decompiled_level0/
-   └── main.c
-```
+* `flag.txt` file containing the retrieved flag  
+* `asm_analysis.md` GDB analysis of the binary  
+* `decompiled_level0/` folder containing the reconstructed C code from Ghidra  
+
