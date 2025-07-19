@@ -4,7 +4,7 @@
 
 ```bash
 level2@RainFall:~$ id
-uid=2002(level2) gid=2002(level2) groups=2002(level2)
+uid=2021(level2) gid=2021(level2) groups=2021(level2),100(users)
 ```
 
 ## Where am I?
