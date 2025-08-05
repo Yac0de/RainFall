@@ -282,6 +282,16 @@ The `m()` function was called instead of `puts()`, printing the password followe
 
 ---
 
+## Files in this repository
+
+Here is a summary of the files included in the repository for this level.
+
+* `flag.txt`: file containing the retrieved flag
+* `decompiled_level7/`: folder containing the reconstructed C code from Ghidra
+* `asm_analysis.md`: GDB analysis of the binary
+
+---
+
 ## Conclusion
 
 This level showcases a creative and effective heap-based exploit technique:
