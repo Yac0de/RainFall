@@ -175,14 +175,14 @@ This section demonstrates how to use GDB to confirm what the binary is doing dur
 
 We start by checking how the argument is interpreted as an integer:
 
-```bash
+```gdb
 (gdb) break *0x08048ed4         # Before atoi is called
 (gdb) run 423
 ```
 
 Once hit:
 
-```bash
+```gdb
 (gdb) x/s *((char **)($esp))    # Display argv[1]
 0xbffff8f8: "423"
 ```
@@ -193,7 +193,7 @@ This confirms that the argument is indeed passed correctly to `atoi()`.
 
 To verify the control flow depending on the input value:
 
-```bash
+```gdb
 (gdb) break *0x08048ed9         # cmp $0x1a7, %eax
 (gdb) continue
 (gdb) print $eax                # Check result of atoi
@@ -206,7 +206,7 @@ The comparison is passed, and execution proceeds to privilege escalation.
 
 We now confirm that the binary sets UID and GID if the input is correct:
 
-```bash
+```gdb
 (gdb) break *0x08048f21         # Before setresgid is called
 (gdb) continue
 (gdb) print $eax                # EGID passed to syscall
@@ -232,7 +232,7 @@ uid=2030(level1) gid=2020(level0) groups=2030(level1),100(users),2020(level0)
 
 To confirm that the binary launches a shell:
 
-```bash
+```gdb
 (gdb) break *0x08048f51         # Before execv is called
 (gdb) continue
 (gdb) x/s *(char **)($esp)     # First argument to execv
@@ -257,7 +257,7 @@ We observe the binary prepares a proper call to spawn a shell.
 
 To see what happens if the input is not 423:
 
-```bash
+```gdb
 (gdb) break *0x08048f7b         # fwrite call
 (gdb) run 1
 (gdb) x/s 0x80c5350             # Error message
