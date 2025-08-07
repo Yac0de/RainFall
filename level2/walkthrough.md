@@ -23,7 +23,7 @@ We are in possession of a SUID binary owned by level3. Our objective is to explo
 
 Before running the binary, we open it in GDB to check which functions are defined:
 
-```
+```gdb
 (gdb) info functions
 ...
 0x080484d4 p
@@ -34,7 +34,7 @@ We see two user-defined functions of interest: `main()` and `p()`.
 
 Let’s disassemble `main()`:
 
-```
+```gdb
 (gdb) disas main
     0x0804853f <+0>: push %ebp
     0x08048540 <+1>: mov %esp,%ebp
@@ -48,7 +48,7 @@ The main function simply calls `p()`.
 
 Now, disassembling `p()` gives:
 
-```
+```gdb
 (gdb) disas p
     ...
     call 0x80483c0 <gets@plt>
@@ -143,7 +143,7 @@ After entering input, the program stores a copy of it using `strdup()`, which al
 
 So, to locate where the input gets copied in the heap, we can run the binary with `ltrace`:
 
-```
+```bash
 $ ltrace ./level2
 fflush(0xb7fd1a20)                                    = 0
 gets(0xbffff6fc)                                      = 0xbffff6fc
