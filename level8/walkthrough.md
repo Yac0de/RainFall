@@ -8,7 +8,7 @@ In this level, we exploit a logic flaw in how heap memory is allocated and acces
 
 Before diving into the binary’s behavior, we identify our current user context to confirm the environment:
 
-```
+```bash
 level8@RainFall:~$ id
 uid=2008(level8) gid=2008(level8) groups=2008(level8),100(users)
 ```
@@ -17,7 +17,7 @@ uid=2008(level8) gid=2008(level8) groups=2008(level8),100(users)
 
 Let’s explore the directory to see what we’re working with:
 
-```
+```bash
 level8@RainFall:~$ ls -l
 -rwsr-s---+ 1 level9 users 6057 Mar  6  2016 level8*
 ```
@@ -30,7 +30,7 @@ We find a SUID binary owned by `level9`. Our mission is to exploit this binary i
 
 We begin by launching the binary to get an idea of its runtime behavior:
 
-```
+```bash
 level8@RainFall:~$ ./level8
 (nil), (nil)
 ```
@@ -158,7 +158,7 @@ auth test
 
 Memory layout:
 
-```
+```bash
 0x804a008 : 't'
 0x804a009 : 'e'
 0x804a00A : 's'
@@ -176,7 +176,7 @@ service $(python -c 'print("A"*32)')
 
 Visualisation mémoire (simplifiée) :
 
-```
+```bash
 ...    <- auth (4 bytes) at 0x804a008
 ...
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA <- service (32 A) at 0x804a018
