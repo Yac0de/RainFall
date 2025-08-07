@@ -48,7 +48,7 @@ There is no crash, even with 200 characters. Unlike the previous level which use
 (gdb) disas main
 ```
 
-```
+```asm
 0x0804851a <+0>: push %ebp
 0x0804851b <+1>: mov %esp,%ebp
 0x0804851d <+3>: and $0xfffffff0,%esp
