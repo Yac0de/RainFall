@@ -20,7 +20,7 @@ A value of 0 means ASLR is disabled, memory addresses will remain consistent acr
 Check protections with checksec:
 
 ```
-level6@RainFall:~$ checksec --file ./level6
+level6@RainFall:~$ checksec --file ./level7
 RELRO           STACK CANARY      NX            PIE             RPATH      RUNPATH      FILE
 No RELRO        No canary found   NX disabled   No PIE          No RPATH   No RUNPATH   ./level7
 ```
