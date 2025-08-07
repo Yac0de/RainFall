@@ -9,7 +9,7 @@ Before performing any kind of exploitation, we assess the security mitigations i
 Check if ASLR is enabled:
 
 ```
-level6@RainFall:~$ cat /proc/sys/kernel/randomize_va_space
+level7@RainFall:~$ cat /proc/sys/kernel/randomize_va_space
 0
 ```
 
@@ -20,7 +20,7 @@ A value of 0 means ASLR is disabled, memory addresses will remain consistent acr
 Check protections with checksec:
 
 ```
-level6@RainFall:~$ checksec --file ./level7
+level7@RainFall:~$ checksec --file ./level7
 RELRO           STACK CANARY      NX            PIE             RPATH      RUNPATH      FILE
 No RELRO        No canary found   NX disabled   No PIE          No RPATH   No RUNPATH   ./level7
 ```
