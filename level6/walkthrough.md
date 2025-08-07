@@ -41,7 +41,7 @@ We now analyze the binary structure and control flow to find an entry point for 
 
 We start by listing the functions:
 
-```bash
+```gdb
 (gdb) info functions
 ...
 0x08048454  n
@@ -87,7 +87,7 @@ Aa0Aa1Aa2Aa3Aa4Aa5...
 
 Run the binary with the pattern:
 
-```bash
+```gdb
 (gdb) run Aa0Aa1Aa2...
 ...
 Program received signal SIGSEGV, Segmentation fault.
@@ -96,7 +96,7 @@ Program received signal SIGSEGV, Segmentation fault.
 
 Check the EIP value:
 
-```bash
+```gdb
 (gdb) info registers eip
 EIP: 0x41346341
 ```
@@ -123,7 +123,7 @@ system("/bin/cat /home/user/level7/.pass");
 So we want to overwrite the function pointer at `malloc(4)` with the address of `n()`.
 We locate it in GDB:
 
-```bash
+```gdb
 (gdb) p n
 $1 = {<text variable, no debug info>} 0x8048454 <n>
 ```
