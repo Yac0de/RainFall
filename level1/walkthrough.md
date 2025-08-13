@@ -149,9 +149,6 @@ $ cat /home/user/level2/.pass
 
 ## Files in this repository
 
-```
-* `flag.txt` file containing the retrieved flag  
-* `asm_analysis.md` GDB analysis of the binary  
-* `decompiled_level0/` folder containing the reconstructed C code from Ghidra  
-```
-
+* `flag.txt`: file containing the retrieved flag
+* `asm_analysis.md`: GDB analysis of the binary
+* `source/`: contains `ghidra/` (raw Ghidra decompilation) and `clean/` (cleaned C, faithful to binary)

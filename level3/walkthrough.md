@@ -73,7 +73,7 @@ We identify three important things:
 2. The input is printed using `printf(buffer)` — **format string vulnerability!**
 3. A comparison checks if a global variable `m` at `0x0804988c` is equal to 64 (`0x40`). If true, it launches a shell.
 
-This logic was confirmed by decompiling the binary using Ghidra (see `decompiled_level3/v.c`).
+This logic was confirmed by decompiling the binary using Ghidra (see `source/ghidra/v.c`).
 
 ---
 
@@ -165,7 +165,6 @@ Success.
 
 ## Files in this repository
 
-* `flag.txt` : file containing the retrieved flag
-* `asm_analysis.md` : GDB analysis of the binary
-* `decompiled_level3/` : folder containing the reconstructed C code from Ghidra
-
+* `flag.txt`: file containing the retrieved flag
+* `asm_analysis.md`: GDB analysis of the binary
+* `source/`: contains `ghidra/` (raw Ghidra decompilation) and `clean/` (cleaned C, faithful to binary)

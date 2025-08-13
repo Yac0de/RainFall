@@ -75,21 +75,28 @@ undefined4 main(undefined4 param_1,int param_2)
 > Simplified version for clarity:
 >
 > ```c
-> void main(int argc, char **argv) {
->   int** a = malloc(8);
->   *a = (int*)1;
->   a[1] = malloc(8);
->   int** b = malloc(8);
->   *b = (int*)2;
->   b[1] = malloc(8);
->
->   strcpy((char*)a[1], argv[1]);
->   strcpy((char*)b[1], argv[2]);
->
->   FILE* f = fopen("/home/user/level8/.pass", "r");
->   fgets(c, 0x44, f);
->   puts("~~");
-> }
+int main(int ac, char **av) {
+    uintptr_t *a;
+    uintptr_t *b;
+    FILE *f;
+
+    a = malloc(2 * sizeof(uintptr_t));
+    a[0] = 1;
+    a[1] = (uintptr_t)malloc(8);
+
+    b = malloc(2 * sizeof(uintptr_t));
+    b[0] = 2;
+    b[1] = (uintptr_t)malloc(8);
+
+    strcpy((char *)a[1], av[1]);
+    strcpy((char *)b[1], av[2]);
+
+    f = fopen("/home/user/level8/.pass", "r");
+    fgets(c, 68, f);
+
+    puts("~~");
+    return 0;
+}
 > ```
 
 We also find an unused function `m()` in the binary:
@@ -284,12 +291,9 @@ The `m()` function was called instead of `puts()`, printing the password followe
 
 ## Files in this repository
 
-Here is a summary of the files included in the repository for this level.
-
 * `flag.txt`: file containing the retrieved flag
-* `decompiled_level7/`: folder containing the reconstructed C code from Ghidra
 * `asm_analysis.md`: GDB analysis of the binary
-
+* `source/`: contains `ghidra/` (raw Ghidra decompilation) and `clean/` (cleaned C, faithful to binary)
 ---
 
 ## Conclusion

@@ -208,11 +208,9 @@ Exploit succeeded.
 
 ## Files in this repository
 
-Here’s what this level’s directory contains:
-
 * `flag.txt`: file containing the retrieved flag
-* `decompiled_level8/`: folder containing the reconstructed C code from Ghidra and a simplified version
 * `asm_analysis.md`: GDB analysis of the binary
+* `source/`: contains `ghidra/` (raw Ghidra decompilation) and `clean/` (cleaned C, faithful to binary)
 
 ---
 

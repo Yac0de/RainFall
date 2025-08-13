@@ -1,5 +1,4 @@
 void main(void)
-
 {
   char local_50 [76];
   

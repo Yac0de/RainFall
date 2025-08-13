@@ -293,7 +293,7 @@ This gives us the exact number of bytes to overflow the buffer and reach EIP: **
 
 This approach avoids assumptions and is based purely on observing the actual stack layout at runtime.
 
-Note: The decompiled source of `main()` in `decompiled_level1/main.c` confirms this finding, where the buffer is declared as:
+Note: The decompiled source of `main()` in `source/ghidra/main.c` confirms this finding, where the buffer is declared as:
 
 ```c
 char local_50[76];

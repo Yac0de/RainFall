@@ -163,12 +163,9 @@ We successfully redirected execution to the function `n()` and obtained the pass
 
 ## Files in this repository
 
-Here is a summary of the files included in the repository for this level.
-
 * `flag.txt`: file containing the retrieved flag
-* `decompiled_level6/`: folder containing the reconstructed C code from Ghidra
 * `asm_analysis.md`: GDB analysis of the binary
-
+* `source/`: contains `ghidra/` (raw Ghidra decompilation) and `clean/` (cleaned C, faithful to binary)
 ---
 
 ## Conclusion
