@@ -81,12 +81,6 @@ This introduces a classic format string vulnerability. We can try to leak stack 
 python -c 'print "AAAA %x %x %x %x %x %x %x %x %x %x"' | ./level5
 ```
 
-We continue until we spot `0x41414141`:
-
-```bash
-python -c 'print "AAAA" + " %x" * 15' | ./level5
-```
-
 We find `41414141` (AAAA) at the **4th** position on the stack. So we will use `%4$n`.
 
 ---
