@@ -73,8 +73,8 @@ undefined4 main(undefined4 param_1,int param_2)
 ```
 
 > Simplified version for clarity:
->
-> ```c
+
+```c
 int main(int ac, char **av) {
     uintptr_t *a;
     uintptr_t *b;
@@ -97,7 +97,7 @@ int main(int ac, char **av) {
     puts("~~");
     return 0;
 }
-> ```
+```
 
 We also find an unused function `m()` in the binary:
 
