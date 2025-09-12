@@ -100,12 +100,10 @@ For example, if the address of `run()` is:
 Then it must be written in memory as:
 
 ```
-D
+\x44\x84\x04\x08
 ```
 
 This is because memory reads the bytes from lowest to highest address, and in little-endian systems, the LSB comes first.
-
-If you were to write it as `D`, it would actually represent a totally different address (0x44840408), and your exploit would fail.
 
 * 76 bytes of filler (e.g. "A" \* 76)
 * Address of `run()` in little-endian format: `\x44\x84\x04\x08`
