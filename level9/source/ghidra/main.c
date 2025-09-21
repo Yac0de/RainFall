@@ -1,7 +1,3 @@
-// Ghidra — selected relevant parts only
-
-
-// main
 void main(int argc, int argv)
 {
 N *a;
@@ -13,29 +9,22 @@ N::setAnnotation(a, *(char**)(argv + 4));
 (*(code *)**(void**)b)(b, a);
 }
 
-
-// N::N(int)
 void __thiscall N::N(N *this, int v)
 {
-*(void ***)this = &PTR_operator__08048848; // vtable pointer at +0x00
-*(int *)(this + 0x68) = v; // value at +0x68
+*(void ***)this = &PTR_operator__08048848;
+*(int *)(this + 0x68) = v;
 }
 
-
-// N::setAnnotation(char*)
 void __thiscall N::setAnnotation(N *this, char *s)
 {
 size_t n = strlen(s);
-memcpy(this + 4, s, n); // unchecked copy starting at +0x04 (overflow primitive)
+memcpy(this + 4, s, n);
 }
 
-
-// optional: arithmetic operators present in the binary
 int __thiscall N::operator+(N *this, N *o)
 {
 return *(int *)(o + 0x68) + *(int *)(this + 0x68);
 }
-
 
 int __thiscall N::operator-(N *this, N *o)
 {
