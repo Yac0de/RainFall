@@ -151,10 +151,7 @@ f3f0004b6f364cb5a4147e9ef827fa922a4861408845c26b6971ad770d906728
 ## **Files in this repository**
 
 * `flag.txt`: file containing the retrieved flag
-* `asm_analysis.md`: GDB analysis of the binary
 * `source/`: contains `ghidra/` (raw Ghidra decompilation) and `clean/` (cleaned C, faithful to binary)
-
----
 
 ---
 
