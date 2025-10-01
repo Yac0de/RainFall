@@ -89,6 +89,28 @@ undefined4 main(undefined4 param_1, int param_2)
   return 0;
 }
 ```
+##### once the code has been cleaned up :
+```c
+#define _GNU_SOURCE
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+int main(int ac, char **av) {
+    if (atoi(av[1]) == 423) {
+        char *sh = strdup("/bin/sh");
+
+        setresgid(getegid(), getegid(), getegid());
+        setresuid(geteuid(), geteuid(), geteuid());
+
+        execv("/bin/sh", &sh);
+    }
+
+    fwrite("No !\n", 1, 5, stderr);
+    return 0;
+}
+```
 
 * The binary converts the first argument to an integer.
 * If the integer is `0x1a7` (which is 423 in decimal), it sets the real and effective UID/GID to match the current ones (those of the file owner), and then launches a shell.
